@@ -6,24 +6,49 @@
     <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      a-scene {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+
       #controls {
         position: fixed;
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        z-index: 999;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px;
+        border-radius: 8px;
       }
 
       #controls button {
         padding: 10px 20px;
         font-size: 16px;
         margin: 0 5px;
+        cursor: pointer;
       }
     </style>
   </head>
 
   <body>
-    <!-- MindAR Scene -->
+    <!-- Controls (user interaction required for audio) -->
+    <div id="controls">
+      <button id="play">▶ Play</button>
+      <button id="pause">⏸ Pause</button>
+    </div>
+
+    <!-- Scene -->
     <a-scene
       mindar-image="imageTargetSrc: targets.mind; autoStart: true"
       embedded
@@ -33,45 +58,42 @@
       device-orientation-permission-ui="enabled: true"
     >
       <a-assets>
-        <audio id="audio" src="audio.mp3"></audio>
+        <audio id="my-audio" src="audio.mp3" preload="auto"></audio>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
         <a-plane color="yellow" height="1" width="1"></a-plane>
-        <a-sound id="sound" src="#audio" autoplay="false" loop="false"></a-sound>
       </a-entity>
     </a-scene>
 
-    <!-- Controls -->
-    <div id="controls">
-      <button onclick="playAudio()">▶ Play</button>
-      <button onclick="pauseAudio()">⏸ Pause</button>
-    </div>
-
-    <!-- JS Logic -->
+    <!-- Script -->
     <script>
+      const audio = document.getElementById('my-audio');
+      const playBtn = document.getElementById('play');
+      const pauseBtn = document.getElementById('pause');
       const scene = document.querySelector('a-scene');
-      const sound = document.querySelector('#sound');
 
-      function playAudio() {
-        sound.components.sound.playSound();
-      }
+      // Force user interaction to enable audio
+      playBtn.addEventListener('click', () => {
+        audio.play();
+      });
 
-      function pauseAudio() {
-        sound.components.sound.stopSound();
-      }
+      pauseBtn.addEventListener('click', () => {
+        audio.pause();
+      });
 
-      // Optional: Auto play on target detection
+      // Auto play when image is detected (after user has interacted once)
       scene.addEventListener('targetFound', () => {
-        console.log('Target Found');
-        playAudio();
+        console.log('Target found');
+        audio.play();
       });
 
       scene.addEventListener('targetLost', () => {
-        console.log('Target Lost');
-        pauseAudio();
+        console.log('Target lost');
+        audio.pause();
+        audio.currentTime = 0;
       });
     </script>
   </body>
