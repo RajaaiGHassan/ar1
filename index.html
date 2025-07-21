@@ -1,44 +1,77 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <meta charset="UTF-8" />
+    <title>MindAR Audio Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+      #controls {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 999;
+      }
+
+      #controls button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin: 0 5px;
+      }
+    </style>
   </head>
+
   <body>
-    <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;" 
-             vr-mode-ui="enabled: false" 
-             device-orientation-permission-ui="enabled: false"
-             cursor="rayOrigin: mouse">
-      
-      <a-camera position="0 0 0" look-controls="enabled: false">
-        <a-cursor></a-cursor>
-      </a-camera>
-      
+    <!-- MindAR Scene -->
+    <a-scene
+      mindar-image="imageTargetSrc: targets.mind; autoStart: true"
+      embedded
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: true"
+    >
+      <a-assets>
+        <audio id="audio" src="audio.mp3"></audio>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-plane id="color-changing-plane" 
-                 color="blue" 
-                 opacity="0.5" 
-                 position="0 0 0" 
-                 height="0.552" 
-                 width="1" 
-                 rotation="0 0 0"
-                 class="clickable">
-        </a-plane>
+        <a-plane color="yellow" height="1" width="1"></a-plane>
+        <a-sound id="sound" src="#audio" autoplay="false" loop="false"></a-sound>
       </a-entity>
     </a-scene>
 
+    <!-- Controls -->
+    <div id="controls">
+      <button onclick="playAudio()">▶ Play</button>
+      <button onclick="pauseAudio()">⏸ Pause</button>
+    </div>
+
+    <!-- JS Logic -->
     <script>
-      AFRAME.registerComponent('change-color', {
-        init: function() {
-          this.el.addEventListener('click', () => {
-            this.el.setAttribute('color', 'red');
-          });
-        }
+      const scene = document.querySelector('a-scene');
+      const sound = document.querySelector('#sound');
+
+      function playAudio() {
+        sound.components.sound.playSound();
+      }
+
+      function pauseAudio() {
+        sound.components.sound.stopSound();
+      }
+
+      // Optional: Auto play on target detection
+      scene.addEventListener('targetFound', () => {
+        console.log('Target Found');
+        playAudio();
       });
 
-      document.addEventListener('DOMContentLoaded', () => {
-        const plane = document.querySelector('#color-changing-plane');
-        plane.setAttribute('change-color', '');
+      scene.addEventListener('targetLost', () => {
+        console.log('Target Lost');
+        pauseAudio();
       });
     </script>
   </body>
