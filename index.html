@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>MindAR Audio Example</title>
+    <title>MindAR Two Targets Audio</title>
     <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <style>
@@ -42,13 +42,10 @@
   </head>
 
   <body>
-    <!-- Controls (user interaction required for audio) -->
     <div id="controls">
-      <button id="play">▶ Play</button>
-      <button id="pause">⏸ Pause</button>
+      <button id="unlock">🔓 Unlock Audio</button>
     </div>
 
-    <!-- Scene -->
     <a-scene
       mindar-image="imageTargetSrc: targets.mind; autoStart: true"
       embedded
@@ -58,42 +55,61 @@
       device-orientation-permission-ui="enabled: true"
     >
       <a-assets>
-        <audio id="my-audio" src="audio.mp3" preload="auto"></audio>
+        <audio id="audio1" src="audio1.mp3" preload="auto"></audio>
+        <audio id="audio2" src="audio2.mp3" preload="auto"></audio>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-plane color="yellow" height="1" width="1"></a-plane>
+      <!-- Target 0 -->
+      <a-entity id="target0" mindar-image-target="targetIndex: 0">
+        <a-plane color="red" height="1" width="1"></a-plane>
+      </a-entity>
+
+      <!-- Target 1 -->
+      <a-entity id="target1" mindar-image-target="targetIndex: 1">
+        <a-plane color="blue" height="1" width="1"></a-plane>
       </a-entity>
     </a-scene>
 
-    <!-- Script -->
     <script>
-      const audio = document.getElementById('my-audio');
-      const playBtn = document.getElementById('play');
-      const pauseBtn = document.getElementById('pause');
-      const scene = document.querySelector('a-scene');
+      const audio1 = document.getElementById("audio1");
+      const audio2 = document.getElementById("audio2");
+      const unlockButton = document.getElementById("unlock");
 
-      // Force user interaction to enable audio
-      playBtn.addEventListener('click', () => {
-        audio.play();
+      // Required for autoplay policies
+      unlockButton.addEventListener("click", () => {
+        audio1.play();
+        audio1.pause();
+        audio2.play();
+        audio2.pause();
+        unlockButton.style.display = "none";
       });
 
-      pauseBtn.addEventListener('click', () => {
-        audio.pause();
+      // Target 0
+      document.getElementById("target0").addEventListener("targetFound", () => {
+        console.log("Target 0 found");
+        audio1.currentTime = 0;
+        audio1.play();
       });
 
-      // Auto play when image is detected (after user has interacted once)
-      scene.addEventListener('targetFound', () => {
-        console.log('Target found');
-        audio.play();
+      document.getElementById("target0").addEventListener("targetLost", () => {
+        console.log("Target 0 lost");
+        audio1.pause();
+        audio1.currentTime = 0;
       });
 
-      scene.addEventListener('targetLost', () => {
-        console.log('Target lost');
-        audio.pause();
-        audio.currentTime = 0;
+      // Target 1
+      document.getElementById("target1").addEventListener("targetFound", () => {
+        console.log("Target 1 found");
+        audio2.currentTime = 0;
+        audio2.play();
+      });
+
+      document.getElementById("target1").addEventListener("targetLost", () => {
+        console.log("Target 1 lost");
+        audio2.pause();
+        audio2.currentTime = 0;
       });
     </script>
   </body>
